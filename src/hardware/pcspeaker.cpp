@@ -236,7 +236,7 @@ static float NeutralOr(float fallback)
 // Returns, in order of preference:
 // - Neutral voltage, if the speaker's fully faded
 // - The last active PIT voltage to stitch on-going playback
-// - The fallback voltage to kick start a new sound pattern 
+// - The fallback voltage to kick start a new sound pattern
 static float NeutralLastPitOr(float fallback)
 {
 	const bool use_last = std::isgreater(fabs(spkr.pit_last),
