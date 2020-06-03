@@ -27,6 +27,7 @@
 
 #include <string.h>
 #include <sys/types.h>
+#include <limits>
 #include <math.h>
 #include <algorithm>
 
