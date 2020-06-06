@@ -69,7 +69,6 @@
 #define TICK_NEXT ( 1 << TICK_SHIFT)
 #define TICK_MASK (TICK_NEXT -1)
 
-
 static INLINE Bit16s MIXER_CLIP(Bits SAMP) {
 	if (SAMP < MAX_AUDIO) {
 		if (SAMP > MIN_AUDIO)
@@ -236,11 +235,13 @@ void MixerChannel::SetFreq(Bitu freq) {
 	freq_add=(freq<<FREQ_SHIFT)/mixer.freq;
 	interpolate = (freq != mixer.freq);
 	sample_rate = static_cast<uint32_t>(freq);
+	envelope.Update(sample_rate, peak_magnitude);
 }
 
 void MixerChannel::SetPeakMagnitude(const uint32_t peak)
 {
 	peak_magnitude = peak;
+	envelope.Update(sample_rate, peak_magnitude);
 }
 
 void MixerChannel::Mix(Bitu _needed) {
@@ -419,11 +420,15 @@ inline void MixerChannel::AddSamples(Bitu len, const Type* data) {
 #endif
 		}
 
-		//Apply the left and right channel mappers only on write[..]
-		//assignments.  This ensures the channels are mapped only once
+		// Process initial samples through an expanding envelope to
+		// prevent severe clicks and pops. Becomes a no-op when done.
+		envelope.Process(stereo, interpolate, prev_sample, next_sample);
+
+		// Apply the left and right channel mappers only on write[..]
+		// assignments.  This ensures the channels are mapped only once
 		//(avoiding double-swapping) and also minimizes the places where
-		//we use our mapping variables as array indexes.
-		//Note that volumes are independent of the channels mapping.
+		// we use our mapping variables as array indexes.
+		// Note that volumes are independent of the channels mapping.
 		const Bit8u left_map(channel_map[0]);
 		const Bit8u right_map(channel_map[1]);
 
