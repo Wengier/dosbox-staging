@@ -540,7 +540,14 @@ static void PlayDMATransfer(Bitu size)
 			} else sb.dma.remain_size=0;
 		} else {
 			read=sb.dma.chan->Read(size,sb.dma.buf.b8);
-			if (!sb.dma.sign) sb.chan->AddSamples_m8(read,sb.dma.buf.b8);
+			const uint8_t datum = sb.dma.buf.b8[0];
+			const int8_t correction_to_centerline = 127 - datum;
+			// LOG_MSG("%s: datum = %u, correction_to_centerline = %d",
+			//        CardType(), datum, correction_to_centerline);
+			for (i = 0;i<read;i++) {
+					sb.dma.buf.b8[i] += correction_to_centerline;
+			}
+			if (!sb.dma.sign) sb.chan->AddSamples_m8(read, sb.dma.buf.b8);
 			else sb.chan->AddSamples_m8s(read,(Bit8s *)sb.dma.buf.b8);
 		}
 		break;
